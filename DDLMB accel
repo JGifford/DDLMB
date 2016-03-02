@@ -1,0 +1,47 @@
+from sense_hat import SenseHat
+from datetime import datetime
+
+FILENAME = "/home/pi/Desktop/sensehat_projects/DDLMB_DATA"
+WRITE_FREQUENCY = 50
+
+def file_setup(filename):
+    header =["acc_x","acc_y","acc_z","timestamp"]
+
+    with open(filename, "w") as f:
+        f.write(",".join(str(value) for value in header)+ "/n")
+        
+
+def log_data():
+    output_string = ",".join(str(value) for value in sense_data)
+    batch_data.append(output_string)
+
+def get_sense_data():
+    sense_data=[]
+
+    x,y,z = sense.get_accelerometer_raw().values()
+    sense_data.extend([x,y,z])
+
+    sense_data.append(datetime.now())
+
+    return sense_data
+
+sense = SenseHat()
+batch_data= []
+
+if FILENAME == "":
+    filename = "SenseLog-"+str(datetime.now())+".csv"
+else:
+    filename = FILENAME+"-"+str(datetime.now())+".csv"
+
+file_setup(filename)
+
+while True:
+    sense_data = get_sense_data()
+    log_data()
+
+    if len(batch_data) >= WRITE_FREQUENCY:
+        print("writing to file...")
+        with open(filename,"a") as f:
+            for line in batch_data:
+                f.write(line + "/n")
+            batch_data = []
